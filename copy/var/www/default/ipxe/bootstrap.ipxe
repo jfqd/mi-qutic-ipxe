@@ -1,0 +1,63 @@
+#!ipxe
+
+set remote-root http://10.10.10.58
+set smartos-build 20201007T223416Z
+set smartos-build2 20201007T223416Z
+dhcp
+:start
+menu Welcome to iPXE's Boot Menu
+item
+item --gap -- ------------------------- SmartOS option 1 ------------------------------
+item smartos            Boot SmartOS (${smartos-build})
+item smartos_noimport   Boot SmartOS (${smartos-build}) noimport
+item --gap -- -------------------------------------------------------------------------
+item
+item --gap -- ------------------------- SmartOS option 2 ------------------------------
+item smartos2            Boot SmartOS (${smartos-build2})
+item smartos_noimport2   Boot SmartOS (${smartos-build2}) noimport
+item --gap -- ------------------------------ Utilities ---------------------------------
+item memtest    Memtest86+ 5.01
+item shell      Enter iPXE shell
+item reboot     Reboot
+item
+item exit       Exit (boot local disk)
+
+choose --default smartos --timeout 30000 target && goto ${target}
+
+:shell
+echo Type exit to get the back to the menu
+shell
+set menu-timeout 0
+goto start
+
+:reboot
+reboot
+
+:exit
+exit
+
+:smartos
+kernel ${remote-root}/smartos/${smartos-build}/platform/i86pc/kernel/amd64/unix -B console=text,smartos=true
+module ${remote-root}/smartos/${smartos-build}/platform/i86pc/amd64/boot_archive
+boot || goto start
+
+:smartos_noimport
+kernel ${remote-root}/smartos/${smartos-build}/platform/i86pc/kernel/amd64/unix -B console=text,smartos=true,noimport=true
+module ${remote-root}/smartos/${smartos-build}/platform/i86pc/amd64/boot_archive
+boot || goto start
+
+:smartos2
+kernel ${remote-root}/smartos/${smartos-build2}/platform/i86pc/kernel/amd64/unix -B console=text,smartos=true
+module ${remote-root}/smartos/${smartos-build2}/platform/i86pc/amd64/boot_archive
+boot || goto start
+
+:smartos_noimport2
+kernel ${remote-root}/smartos/${smartos-build2}/platform/i86pc/kernel/amd64/unix -B console=text,smartos=true,noimport=true
+module ${remote-root}/smartos/${smartos-build2}/platform/i86pc/amd64/boot_archive
+boot || goto start
+
+:memtest
+kernel ${remote-root}/memtest86/memtest86-5.01
+boot || goto start
+
+# end of ipxe

@@ -1,0 +1,8 @@
+name="qutic-ipxe"
+organization="qutic development"
+brand="ipxe Instance"
+version="20181018.0"
+description="qutic ipxe image"
+homepage="https://github.com/jfqd/mi-qutic-ipxe"
+users="root admin"
+base="a663a98e-f2c5-11ea-9f9a-236f517a8c1d"

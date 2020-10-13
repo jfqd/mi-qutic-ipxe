@@ -1,0 +1,62 @@
+<?xml version='1.0'?>
+<!DOCTYPE service_bundle SYSTEM '/usr/share/lib/xml/dtd/service_bundle.dtd.1'>
+<service_bundle type='manifest' name='network:tftp'>
+<service
+        name='network/tftp/udp6'
+        type='service'
+        version='1'>
+
+        <create_default_instance enabled='false'/>
+
+        <restarter>
+                <service_fmri value='svc:/network/inetd:default' />
+        </restarter>
+
+        <exec_method
+                type='method'
+                name='inetd_start'
+                exec='/opt/local/sbin/in.tftpd -s /tftpboot'
+                timeout_seconds='0'>
+                <method_context>
+                        <method_credential user='root' group='root' />
+                </method_context>
+        </exec_method>
+
+        <exec_method
+                type='method'
+                name='inetd_disable'
+                exec=':kill'
+                timeout_seconds='0'>
+        </exec_method>
+
+        <exec_method
+                type='method'
+                name='inetd_offline'
+                exec=':kill_process'
+                timeout_seconds='0'>
+        </exec_method>
+
+        <property_group name='inetd' type='framework'>
+                <propval name='name' type='astring' value='tftp' />
+                <propval name='endpoint_type' type='astring' value='dgram' />
+                <propval name='proto' type='astring' value='udp6' />
+                <propval name='wait' type='boolean' value='true' />
+                <propval name='isrpc' type='boolean' value='false' />
+        </property_group>
+
+        <stability value='External' />
+
+        <template>
+                <common_name>
+                        <loctext xml:lang='C'>
+                        TFTP server
+                        </loctext>
+                </common_name>
+                <documentation>
+                        <manpage title='in.tftpd' section='1M'
+                                manpath='/usr/share/man' />
+                </documentation>
+        </template>
+</service>
+
+</service_bundle>

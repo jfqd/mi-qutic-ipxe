@@ -1,0 +1,46 @@
+#!/usr/bin/bash
+
+PATH=/opt/local/gnu/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin
+
+# Exit if any command fails
+set -o errexit
+
+PLATFORM_VERSION="20201007T223416Z"
+PLATFORM_DATE="20201008"
+
+echo "* Setup tftp server"
+mkdir -p /tftpboot
+svcadm enable inetd
+svccfg import /opt/local/lib/svc/manifest/tftp-udp6.xml
+svcadm enable tftp/udp6
+svcadm restart tftp/udp6
+
+echo "* Setup ipxe"
+curl -q https://download.qutic.com/src/ipxe/undionly.kpxe > /tftpboot/undionly.kpxe
+
+echo "* Setup load latest smartos platform image"
+mkdir -p /var/www/default/smartos/20201007T223416Z
+cd /var/www/default/smartos/20201007T223416Z
+curl -LOq https://us-east.manta.joyent.com/Joyent_Dev/public/SmartOS/${PLATFORM_VERSION}/platform-release-${PLATFORM_DATE}-${PLATFORM_VERSION}.tgz
+tar -xzf platform-release-${PLATFORM_DATE}-${PLATFORM_VERSION}.tgz
+mv  platform-${PLATFORM_VERSION} platform
+rm platform-release-${PLATFORM_DATE}-${PLATFORM_VERSION}.tgz
+sed -i \
+    -e "s|set smartos-build 20201007T223416Z|set smartos-build ${PLATFORM_VERSION}|" \
+    /var/www/default/ipxe/bootstrap.ipxe
+
+echo "* Allow apache vhosts"
+sed -i \
+    -e "s|#LoadModule vhost_alias_module lib/httpd/mod_vhost_alias.so|LoadModule vhost_alias_module lib/httpd/mod_vhost_alias.so|" \
+    -e "s|#Include etc/httpd/httpd-vhosts.conf|Include etc/httpd/httpd-vhosts.conf|" \
+    /opt/local/etc/httpd/httpd.conf
+svcadm enable apache
+svcadm restart apache
+
+# Clean up
+echo "* Cleaning up."
+rm /root/customize
+rm -rf /var/zoneinit/tmp
+
+# Prepare image for provisioning
+sm-prepare-image -y
