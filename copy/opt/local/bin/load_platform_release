@@ -1,0 +1,45 @@
+#!/usr/bin/bash
+
+PLATFORM_VERSION="$1"
+
+if [[ -z "${PLATFORM_VERSION}" ]]; then
+  echo "Error: platform version missing"
+  exit 1
+fi
+
+MIRROR=https://us-east.manta.joyent.com
+PLATFORM_DATE=${PLATFORM_VERSION:0:8}
+
+echo "Downloading latest platform-image..."
+cd /root
+http_code=$(curl -LOs -w "%{http_code}" ${MIRROR}/Joyent_Dev/public/SmartOS/${PLATFORM_VERSION}/platform-release-${PLATFORM_DATE}-${PLATFORM_VERSION}.tgz)
+if [[ "${http_code}" != "200" ]]; then
+  echo "Error: platform version not found on server: ${http_code}"
+  exit 1
+fi
+
+echo -n "Verifying checksum..."
+curl -s ${MIRROR}/Joyent_Dev/public/SmartOS/${PLATFORM_VERSION}/md5sums.txt \
+  | grep platform-release-${PLATFORM_DATE}-${PLATFORM_VERSION}.tgz \
+  | awk '{print $1}' > expected.md5
+openssl md5 platform-release-${PLATFORM_DATE}-${PLATFORM_VERSION}.tgz | awk '{print $2}' > actual.md5
+if ! cmp -s actual.md5 expected.md5 ; then
+  rm actual.md5 expected.md5
+  echo " failed"
+  exit 1
+else
+  rm actual.md5 expected.md5
+  echo " OK"
+fi
+
+echo "Install platform-image..."
+mkdir -p /var/www/default/smartos/${PLATFORM_VERSION}
+cd /var/www/default/smartos/${PLATFORM_VERSION}
+mv /root/platform-release-${PLATFORM_DATE}-${PLATFORM_VERSION}.tgz .
+tar -xzf platform-release-${PLATFORM_DATE}-${PLATFORM_VERSION}.tgz
+mv platform-${PLATFORM_VERSION} platform
+rm platform-release-${PLATFORM_DATE}-${PLATFORM_VERSION}.tgz
+
+echo "set smartos-build to ${PLATFORM_VERSION} in '/var/www/default/ipxe/bootstrap.ipxe'"
+
+exit 0
