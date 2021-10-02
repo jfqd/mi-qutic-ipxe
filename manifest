@@ -1,7 +1,7 @@
 name="qutic-ipxe"
 organization="qutic development"
 brand="ipxe Instance"
-version="20181018.0"
+version="20181018.1"
 description="qutic ipxe image"
 homepage="https://github.com/jfqd/mi-qutic-ipxe"
 users="root admin"
