@@ -19,8 +19,8 @@ echo "* Setup ipxe"
 curl -q https://download.qutic.com/src/ipxe/undionly.kpxe > /tftpboot/undionly.kpxe
 
 echo "* Setup load latest smartos platform image"
-/opt/locl/bin/load_platform_release "${PLATFORM_VERSION}"
-/opt/locl/bin/load_platform_release "${PREVIOUS_VERSION}"
+/opt/local/bin/load_platform_release "${PLATFORM_VERSION}"
+/opt/local/bin/load_platform_release "${PREVIOUS_VERSION}"
 sed -i \
     -e "s|set smartos-build 20201007T223416Z|set smartos-build ${PLATFORM_VERSION}|" \
     -e "s|set smartos-build2 20201007T223416Z|set smartos-build2 ${PREVIOUS_VERSION}|" \
