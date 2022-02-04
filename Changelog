@@ -1,5 +1,10 @@
 # Changelog
 
+## 20201019.0
+
+* use latest base image
+* use download-script for provision
+
 ## 20181018.1
 
 * add download-script for platform-images
