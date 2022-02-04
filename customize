@@ -5,8 +5,8 @@ PATH=/opt/local/gnu/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin
 # Exit if any command fails
 set -o errexit
 
-PLATFORM_VERSION="20201118T153314Z"
-PLATFORM_DATE="20201119"
+PLATFORM_VERSION="20220127T011500Z"
+PREVIOUS_VERSION="20211118T011125Z"
 
 echo "* Setup tftp server"
 mkdir -p /tftpboot
@@ -19,15 +19,11 @@ echo "* Setup ipxe"
 curl -q https://download.qutic.com/src/ipxe/undionly.kpxe > /tftpboot/undionly.kpxe
 
 echo "* Setup load latest smartos platform image"
-mkdir -p /var/www/default/smartos/${PLATFORM_VERSION}
-cd /var/www/default/smartos/${PLATFORM_VERSION}
-curl -LOq https://us-east.manta.joyent.com/Joyent_Dev/public/SmartOS/${PLATFORM_VERSION}/platform-release-${PLATFORM_DATE}-${PLATFORM_VERSION}.tgz
-digest -a md5 platform-release-${PLATFORM_DATE}-${PLATFORM_VERSION}.tgz
-tar -xzf platform-release-${PLATFORM_DATE}-${PLATFORM_VERSION}.tgz
-mv  platform-${PLATFORM_VERSION} platform
-rm platform-release-${PLATFORM_DATE}-${PLATFORM_VERSION}.tgz
+/opt/locl/bin/load_platform_release "${PLATFORM_VERSION}"
+/opt/locl/bin/load_platform_release "${PREVIOUS_VERSION}"
 sed -i \
     -e "s|set smartos-build 20201007T223416Z|set smartos-build ${PLATFORM_VERSION}|" \
+    -e "s|set smartos-build2 20201007T223416Z|set smartos-build2 ${PREVIOUS_VERSION}|" \
     /var/www/default/ipxe/bootstrap.ipxe
 
 echo "* Allow apache vhosts"
